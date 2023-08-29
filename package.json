@@ -14,8 +14,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/lib-storage": "^3.400.0",
+    "@types/aws-sdk": "^2.7.0",
     "aws-sdk": "^2.1446.0",
     "dotenv": "^16.3.1",
+    "ejs": "^3.1.6",
     "ts-node-dev": "^2.0.0"
   },
   "devDependencies": {

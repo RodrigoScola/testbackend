@@ -1,19 +1,19 @@
 import express, { Router } from "express"
 import fs from "fs"
-import { User, UserInfo } from "./User"
-require("dotenv").config()
+import { Employee, EmployeeInfo, Employees } from "./Employee"
+import { S3Bucket } from "./Storage"
+import { User } from "./User"
 
-import AWS from "aws-sdk"
+export const BACKEND_MESSAGES_BUCKET_NAME = "backendtestbucketmessages"
 
-const s3Bucket = new AWS.S3({
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY as string,
-    secretAccessKey: process.env.AWS_SECRET_KEY as string,
-  },
-})
-const BUCKETNAME = "backendtestbucket2"
+export const BACKEND_EMPLOYEE_BUCKET_NAME = "backendtestemployees"
+
+export const BASE_MESSAGE_URL = "https://jsonplaceholder.typicode.com/comments"
 
 const app = express()
+
+app.set("views", __dirname + "/views")
+app.set("view engine", "ejs")
 
 interface Storage {
   save(...args: any): unknown
@@ -21,45 +21,32 @@ interface Storage {
   getOne(...args: any): unknown
 }
 
-export class UserStorage implements Storage {
-  update(): unknown {
+export class MessageStorage implements Storage {
+  [name: string]: any
+  length: number
+  clear(): void {
     throw new Error("Method not implemented.")
   }
-  getOne(...args: any): unknown {
+  getItem(key: string): string | null {
     throw new Error("Method not implemented.")
   }
-  private static AllUsers: Map<string, User> = new Map()
-
-  save(id: string, data: User) {
-    console.log(id, data)
+  key(index: number): string | null {
+    throw new Error("Method not implemented.")
   }
-  static update(id: string, newData: Partial<UserInfo>) {}
-
-  static hasUser(userId: string): boolean {
-    return this.AllUsers.has(userId)
+  removeItem(key: string): void {
+    throw new Error("Method not implemented.")
   }
-  static getOne(id: string): User | null {
-    if (this.AllUsers.has(id)) {
-      return this.AllUsers.get(id) as User
+  setItem(key: string, value: string): void {
+    throw new Error("Method not implemented.")
+  }
+  static async getAll(bucket: S3Bucket) {
+    const files = await bucket.getFile("messages.json")
+    if (files.Body) {
+      return JSON.parse(files.Body.toString())
     }
     return null
   }
-}
 
-class UserHandler {
-  private static AllUsers: Map<string, User> = new Map()
-
-  static getAllUsers(): User[] {
-    return Array.from(UserHandler.AllUsers.values())
-  }
-  getUser(id: string): User | null {
-    if (!UserHandler.AllUsers.has(id)) {
-      return null
-    }
-    return UserHandler.AllUsers.get(id) as User
-  }
-}
-export class MessageStorage implements Storage {
   save(...args: any): unknown {
     return 1
   }
@@ -71,6 +58,73 @@ export class MessageStorage implements Storage {
   }
 }
 
+export class EmployeeStorage implements Storage {
+  [name: string]: any
+  length: number
+  clear(): void {
+    throw new Error("Method not implemented.")
+  }
+  getItem(key: string): string | null {
+    throw new Error("Method not implemented.")
+  }
+  key(index: number): string | null {
+    throw new Error("Method not implemented.")
+  }
+  removeItem(key: string): void {
+    throw new Error("Method not implemented.")
+  }
+  setItem(key: string, value: string): void {
+    throw new Error("Method not implemented.")
+  }
+  static async getAll(bucket: S3Bucket) {
+    const files = await bucket.getFile("employees.json")
+    if (files.Body) {
+      return JSON.parse(files.Body.toString())
+    }
+    return null
+  }
+
+  save(...args: any): unknown {
+    return 1
+  }
+  update(): unknown {
+    return 1
+  }
+  getOne(...args: any): unknown {
+    return 1
+  }
+}
+
+export class MessageProcessor {
+  public static ProcessMessages(messages: MessageInfo[]) {
+    const bucket = new S3Bucket(BACKEND_MESSAGES_BUCKET_NAME)
+
+    messages.forEach((message) => {
+      bucket.upload(
+        "messages/message_" + message.id + ".json",
+        JSON.stringify(message)
+      )
+    })
+  }
+  public static async FetchMessagesFromURL(url: string) {
+    try {
+      const data = await fetch(url, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      })
+      if (data.ok) {
+        return await data.json()
+      }
+      return []
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+  }
+}
+
 const route = Router()
 
 app.use(express.json())
@@ -79,57 +133,6 @@ route.get("/", (req, res) => {
   res.json({
     response: "Hello World",
   })
-})
-route.param("userId", (req, res, next, userId: string) => {
-  if (!UserStorage.hasUser(userId)) {
-    return next("User not exist")
-  }
-  req.user = UserStorage.getOne(userId) as User
-  next()
-})
-
-route.get("/users", (req, res) => {
-  const users = UserHandler.getAllUsers()
-
-  const usersInfo: UserInfo[] = users.map((user) => user.info)
-
-  res.json({
-    users: usersInfo,
-  })
-})
-route.get("/users/:userId", (req, res, next) => {
-  const user = req.user
-
-  res.json({
-    user,
-  })
-})
-
-// gets the user, updates with the current info then saves it into database
-route.put("/users/:userId", (req, res, next) => {
-  const user: UserInfo = req.user.info
-
-  //   just gets the part of the body we want
-  const newInformation: Partial<UserInfo> = {
-    company: req.body.company,
-    email: req.body.email,
-    name: req.body.name,
-    phone: parseInt(req.body.phone),
-  }
-
-  const updatedInformation = UserStorage.update(user.email, newInformation)
-
-  res.json({
-    user: updatedInformation,
-  })
-})
-
-// creates a new user
-route.post("/users", (req, res, next) => {
-  const newUser: UserInfo = req.body
-  if (!User.isValidUser(newUser)) {
-    return next("Invalid user")
-  }
 })
 
 type NewMessageInfo = {
@@ -148,7 +151,11 @@ type MessageInfo = {
   email: string
   body: string
 }
-route.get("/messages", (req, res, next) => {
+route.get("/messages", async (req, res, next) => {
+  const messages = await MessageStorage.getAll(
+    new S3Bucket(BACKEND_MESSAGES_BUCKET_NAME)
+  )
+
   const messagesFromfile = fs.readFileSync("files/comments.json")
   const newJsonMessages: MessageInfo[] = JSON.parse(messagesFromfile.toString())
 
@@ -158,7 +165,7 @@ route.get("/messages", (req, res, next) => {
       user_name: User.userNameFromEmail(message.email),
     }
   })
-  console.log(treatedJsonMessages)
+  // console.log(treatedJsonMessages)
 
   res.json({ treatments: treatedJsonMessages })
 })
@@ -183,36 +190,98 @@ route.get("/messages/post/:postId", (req, res, next) => {
   })
 })
 
+route.get("/employees/", async (req, res, next) => {
+  const s = await Employees.getAllEmployees(
+    new S3Bucket(BACKEND_EMPLOYEE_BUCKET_NAME)
+  )
+
+  res.render("pages/employees", {
+    employees: s,
+  })
+})
+
+route.get("/employees/new", async (req, res, next) => {
+  console.log(req.query)
+  const employeebucket = new S3Bucket(BACKEND_EMPLOYEE_BUCKET_NAME)
+
+  if (Employee.isValidEmployee(req.query)) {
+    const employee = Employee.NewEmployee(req.query as unknown as EmployeeInfo)
+    await employeebucket.upload(
+      `employees/${employee.id}.json`,
+      JSON.stringify(employee)
+    )
+    res.redirect("/employees")
+  }
+  res.render("pages/new_employee")
+})
+route.post("/employees/new", (req, res, next) => {
+  res.json({
+    h: "h",
+  })
+})
+
+route.get("/employees/:employeeid/edit", async (req, res, next) => {
+  const { employeeid } = req.params
+
+  console.log(req.query)
+
+  const employee = await Employees.getEmployee(
+    employeeid,
+    new S3Bucket(BACKEND_EMPLOYEE_BUCKET_NAME)
+  )
+  if (!employee) {
+    return res.json({
+      error: "not found",
+    })
+  }
+
+  Employees.updateEmployee(
+    {
+      ...req.query,
+      id: employeeid,
+    },
+    new S3Bucket(BACKEND_EMPLOYEE_BUCKET_NAME)
+  )
+
+  const emp = new Employee(employee)
+
+  res.render("pages/edit_employee", { employee: emp })
+})
+route.post("/employees/:employeeid/edit", async (req, res, next) => {
+  const { employeeid } = req.params
+
+  console.log(req.query)
+
+  const employee = await Employees.getEmployee(
+    employeeid,
+    new S3Bucket(BACKEND_EMPLOYEE_BUCKET_NAME)
+  )
+
+  if (!employee) {
+    return res.json({
+      error: "not found",
+    })
+  }
+  const newemp = await Employees.updateEmployee(
+    employee,
+    new S3Bucket(BACKEND_EMPLOYEE_BUCKET_NAME)
+  )
+
+  res.json({
+    employeeId: newemp,
+  })
+})
+
 app.use("/", route)
 
-const uploat_to_s3 = (filepath: string, filename: string) => {
-  console.log(filepath)
-  return new Promise((resolve, reject) => {
-    try {
-      const file = fs.readFileSync("files/comments.json")
+app.listen(5000, async () => {
+  // S3Bucket.CreateBucket()
+  // const messages: MessageInfo[] = await MessageProcessor.FetchMessagesFromURL(
+  //   BASE_MESSAGE_URL
+  // )
+  // if (messages.length) {
+  //   MessageProcessor.ProcessMessages(messages)
+  // }
 
-      const uploadParams = {
-        Bucket: BUCKETNAME,
-        Key: filename,
-        Body: file,
-      }
-      // S3 ManagedUpload with callbacks are not supported in AWS SDK for JavaScript (v3).
-      // Please convert to 'await client.upload(params, options).promise()', and re-run aws-sdk-js-codemod.
-      s3Bucket.upload(uploadParams, function (err: any, data: any) {
-        if (err) {
-          return reject(err)
-        }
-        if (data) {
-          return resolve(data)
-        }
-      })
-    } catch (err) {
-      return reject(err)
-    }
-  })
-}
-
-app.listen(5000, () => {
-  uploat_to_s3("filepath", "filename")
-  console.log("App listening in PORT 5000")
+  console.log("Listening in PORT 5000")
 })

@@ -1,0 +1,44 @@
+<!DOCTYPE html>    
+<html lang="en">
+
+<head>
+     <%- include('../partials/head'); %>
+</head>
+
+<body class="container">
+
+
+     <header>
+          <%- include('../partials/header'); %>
+     </header>
+     <form  action="edit">
+          <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+
+          <label>
+               Nome do Empregado: 
+          <input type="text" required placeholder="nosssssssssme" name="name" value="<%= employee.name %>">
+          </label>
+          <label>
+               Email do Empregado: 
+          <input type="email" name="email" required value="<%= employee.email %>aaa" placeholder="email.do_empregado@aqui.com">
+          </label>
+          <label>
+               Telefone do Empregado: 
+          <input type="tel" required name="telephone" value="<%= employee.telephone %>" placeholder="(54) 99198-2471">
+          </label>
+          <label>
+               Empresa do Empregado: 
+          <input type="text" value="<%= employee.company %>" required name="company" placeholder="nome da empresa">
+          </label>
+          <input type="text"  style="display: none; " value="<% employee.id %>" name="id" />
+<button type="submit">
+     Enviar
+</button>
+          </div>
+
+     </form>
+<footer>
+     <%- include('../partials/footer'); %>
+</footer>
+</body>
+</html>

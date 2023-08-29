@@ -1,0 +1,28 @@
+<!DOCTYPE html>    
+<div>
+     
+<ul>
+     <% employees.forEach(function(mascot) { %>
+          <li>
+               <p>
+                    Nome: <%= mascot.name %>
+               </p>
+
+               <p>
+                    email: <%= mascot.email %>
+               </p>
+               <p>
+                    email: <%= mascot.telephone %>
+               </p>
+               <p>
+                    email: <%= mascot.company %>
+               </p>
+
+               <form action="/employees/<%= mascot.id %>/edit">
+               <button>Editar</button>
+               </form>
+          </li>
+          <% }); %>
+</ul>
+</div>
+</html>
