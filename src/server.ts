@@ -1,6 +1,17 @@
 import express, { Router } from "express"
 import fs from "fs"
 import { User, UserInfo } from "./User"
+require("dotenv").config()
+
+import AWS from "aws-sdk"
+
+const s3Bucket = new AWS.S3({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY as string,
+    secretAccessKey: process.env.AWS_SECRET_KEY as string,
+  },
+})
+const BUCKETNAME = "backendtestbucket2"
 
 const app = express()
 
@@ -19,7 +30,9 @@ export class UserStorage implements Storage {
   }
   private static AllUsers: Map<string, User> = new Map()
 
-  save(id: string, data: User) {}
+  save(id: string, data: User) {
+    console.log(id, data)
+  }
   static update(id: string, newData: Partial<UserInfo>) {}
 
   static hasUser(userId: string): boolean {
@@ -47,9 +60,15 @@ class UserHandler {
   }
 }
 export class MessageStorage implements Storage {
-  save(...args: any): unknown {}
-  update(): unknown {}
-  getOne(...args: any): unknown {}
+  save(...args: any): unknown {
+    return 1
+  }
+  update(): unknown {
+    return 1
+  }
+  getOne(...args: any): unknown {
+    return 1
+  }
 }
 
 const route = Router()
@@ -165,13 +184,35 @@ route.get("/messages/post/:postId", (req, res, next) => {
 })
 
 app.use("/", route)
+
+const uploat_to_s3 = (filepath: string, filename: string) => {
+  console.log(filepath)
+  return new Promise((resolve, reject) => {
+    try {
+      const file = fs.readFileSync("files/comments.json")
+
+      const uploadParams = {
+        Bucket: BUCKETNAME,
+        Key: filename,
+        Body: file,
+      }
+      // S3 ManagedUpload with callbacks are not supported in AWS SDK for JavaScript (v3).
+      // Please convert to 'await client.upload(params, options).promise()', and re-run aws-sdk-js-codemod.
+      s3Bucket.upload(uploadParams, function (err: any, data: any) {
+        if (err) {
+          return reject(err)
+        }
+        if (data) {
+          return resolve(data)
+        }
+      })
+    } catch (err) {
+      return reject(err)
+    }
+  })
+}
+
 app.listen(5000, () => {
+  uploat_to_s3("filepath", "filename")
   console.log("App listening in PORT 5000")
 })
-
-// questions
-// can the applications be in express or does it have to be plain node?
-// do you want unit tested
-// can you explain more about the vision aspect? what do you want the application to look like
-// in the second module, do you also want to store the users in the same s3 database, or in a different one, or in a javascript object fine too?
-// is the s3 going to be public so we can look at it togheter ?
