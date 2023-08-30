@@ -9,12 +9,21 @@ export const s3Bucket = new AWS.S3({
     secretAccessKey: "fnB/IEBWXp7hgHsyd3CeIbUOAqkMkOf+CVz3m0AB" as string,
   },
 })
-export interface Bucket {
-  getFile(filename: string): unknown
+export interface MyBucket {
+  getOne(filename: string): unknown
   upload(name: string, contents: any): unknown
 }
 
-export class S3Bucket implements Bucket {
+export class SQLBucket implements MyBucket {
+  getOne(filename: string): unknown {
+    throw new Error("Method not implemented.")
+  }
+  upload(name: string, contents: any): unknown {
+    throw new Error("Method not implemented.")
+  }
+}
+
+export class S3Bucket implements MyBucket {
   public bucketName: string
   constructor(bucketName: string) {
     this.bucketName = bucketName
@@ -46,12 +55,12 @@ export class S3Bucket implements Bucket {
     let promises: any[] = []
 
     filenames.forEach((filename) => {
-      promises.push(this.getFile(filename))
+      promises.push(this.getOne(filename))
     })
     return await Promise.all(promises)
   }
 
-  public getFile(filename: string): Promise<AWS.S3.GetObjectOutput> {
+  public getOne(filename: string): Promise<AWS.S3.GetObjectOutput> {
     return new Promise(async (resolve, reject) => {
       try {
         s3Bucket.getObject(

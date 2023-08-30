@@ -28,7 +28,7 @@ export class Employees {
     employeeId: string,
     bucket: S3Bucket
   ): Promise<EmployeeInfo | null> {
-    const file = await bucket.getFile(`employees/${employeeId}.json`)
+    const file = await bucket.getOne(`employees/${employeeId}.json`)
     if (file.Body == null || typeof file.Body === "undefined") {
       return null
     }

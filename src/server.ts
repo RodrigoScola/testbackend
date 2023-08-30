@@ -4,11 +4,19 @@ import { Employee, EmployeeInfo, Employees } from "./Employee"
 import { S3Bucket } from "./Storage"
 import { User } from "./User"
 
-export const BACKEND_MESSAGES_BUCKET_NAME = "backendtestbucketmessages"
+import mysql from "mysql"
+import {
+  BACKEND_EMPLOYEE_BUCKET_NAME,
+  BACKEND_MESSAGES_BUCKET_NAME,
+} from "./constants"
 
-export const BACKEND_EMPLOYEE_BUCKET_NAME = "backendtestemployees"
-
-export const BASE_MESSAGE_URL = "https://jsonplaceholder.typicode.com/comments"
+export const SQLclient = mysql.createConnection({
+  host: "rds-mysql-10mintutorial.cdtxjhkkib1n.sa-east-1.rds.amazonaws.com",
+  port: 3306,
+  password: "1212Rodrigo",
+  database: "database",
+  user: "admin",
+})
 
 const app = express()
 
@@ -22,25 +30,8 @@ interface Storage {
 }
 
 export class MessageStorage implements Storage {
-  [name: string]: any
-  length: number
-  clear(): void {
-    throw new Error("Method not implemented.")
-  }
-  getItem(key: string): string | null {
-    throw new Error("Method not implemented.")
-  }
-  key(index: number): string | null {
-    throw new Error("Method not implemented.")
-  }
-  removeItem(key: string): void {
-    throw new Error("Method not implemented.")
-  }
-  setItem(key: string, value: string): void {
-    throw new Error("Method not implemented.")
-  }
   static async getAll(bucket: S3Bucket) {
-    const files = await bucket.getFile("messages.json")
+    const files = await bucket.getOne("messages.json")
     if (files.Body) {
       return JSON.parse(files.Body.toString())
     }
@@ -59,25 +50,8 @@ export class MessageStorage implements Storage {
 }
 
 export class EmployeeStorage implements Storage {
-  [name: string]: any
-  length: number
-  clear(): void {
-    throw new Error("Method not implemented.")
-  }
-  getItem(key: string): string | null {
-    throw new Error("Method not implemented.")
-  }
-  key(index: number): string | null {
-    throw new Error("Method not implemented.")
-  }
-  removeItem(key: string): void {
-    throw new Error("Method not implemented.")
-  }
-  setItem(key: string, value: string): void {
-    throw new Error("Method not implemented.")
-  }
   static async getAll(bucket: S3Bucket) {
-    const files = await bucket.getFile("employees.json")
+    const files = await bucket.getOne("employees.json")
     if (files.Body) {
       return JSON.parse(files.Body.toString())
     }
@@ -134,14 +108,6 @@ route.get("/", (req, res) => {
     response: "Hello World",
   })
 })
-
-type NewMessageInfo = {
-  postId: number
-  id: number
-  name: string
-  email: string
-  body: string
-}
 
 type MessageInfo = {
   postId: number
@@ -237,7 +203,7 @@ route.get("/employees/:employeeid/edit", async (req, res, next) => {
 
   Employees.updateEmployee(
     {
-      ...req.query,
+      ...(req.query as unknown as EmployeeInfo),
       id: employeeid,
     },
     new S3Bucket(BACKEND_EMPLOYEE_BUCKET_NAME)
@@ -274,6 +240,20 @@ route.post("/employees/:employeeid/edit", async (req, res, next) => {
 
 app.use("/", route)
 
+const connectDatabase = () => {
+  return new Promise((resolve, reject) => {
+    SQLclient.connect((err) => {
+      if (err) {
+        console.error(err)
+        reject(err)
+        return
+      }
+      console.log("> Successfully connected to MySQL database")
+      resolve(true)
+    })
+  })
+}
+
 app.listen(5000, async () => {
   // S3Bucket.CreateBucket()
   // const messages: MessageInfo[] = await MessageProcessor.FetchMessagesFromURL(
@@ -282,6 +262,7 @@ app.listen(5000, async () => {
   // if (messages.length) {
   //   MessageProcessor.ProcessMessages(messages)
   // }
+  connectDatabase()
 
   console.log("Listening in PORT 5000")
 })
