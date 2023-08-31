@@ -86,7 +86,7 @@ route.get("/", (req, res) => {
   })
 })
 
-route.get("/messages", async (req, res, next) => {
+route.get("/messages", async (req, res) => {
   const fetchedMessages = await MessageProcessor.FetchMessagesFromURL(
     BASE_MESSAGE_URL
   )

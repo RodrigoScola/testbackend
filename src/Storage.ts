@@ -8,16 +8,18 @@ export type QueryResultType<T> = {
 }
 
 export const s3Bucket = new AWS.S3({
-  region: "sa-east-1",
+  region: process.env.AWS_S3_BUCKET_REGION,
   credentials: {
-    accessKeyId: "AKIA37RB447XVIMEPAE5" as string,
-    secretAccessKey: "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" as string,
+    accessKeyId: process.env.AWS_S3_BUCKET_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.AWS_S3_BUCKET_SECRET_KEY_ID || "",
   },
 })
+
 export interface MyBucket {
   getOne<T>(identifier: string): Promise<T | null>
   getAll<T>(identifier: string): Promise<T | null>
   upload<T>(identifier: string, contents: T): Promise<T>
+  update(identifier: string, contents: any): void
 }
 
 export class SQLBucket implements MyBucket {
@@ -60,7 +62,8 @@ export class SQLBucket implements MyBucket {
 
     return keys.join(" = ?, ") + " = ? "
   }
-  update<T extends object>(id: string, info: T) {
+
+  async update<T extends object>(id: string, info: T) {
     return new Promise((res, rej) => {
       const query: string =
         "update " + this.tablename + " set " + SQLBucket.ObjectToSql(info)
@@ -194,7 +197,7 @@ export class S3Bucket implements MyBucket {
       }
     })
   }
-  public update(filename: string, contents: string): Promise<Object> {
+  public async update<T>(filename: string, contents: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
       try {
         const params = {
@@ -214,24 +217,25 @@ export class S3Bucket implements MyBucket {
       }
     })
   }
-  public static CreateBucket(name: string): boolean {
-    let success = false
-    s3Bucket.createBucket({ Bucket: name }, function (err, data) {
-      if (err) {
-        return
-      }
-      success = true
+  public static CreateBucket(name: string): Promise<boolean> {
+    return new Promise((res, rej) => {
+      s3Bucket.createBucket({ Bucket: name }, function (err) {
+        if (err) {
+          rej(err)
+        }
+        res(true)
+      })
     })
-    return success
   }
-  public static RemoveBucket(name: string): boolean {
-    let success = false
-    s3Bucket.deleteBucket({ Bucket: name }, function (err, data) {
-      if (err) {
-        return
-      }
-      success = true
+  public static async RemoveBucket(name: string): Promise<boolean> {
+    return new Promise(async (res, rej) => {
+      await s3Bucket.deleteBucket({ Bucket: name }, function (err) {
+        if (err) {
+          rej(err)
+          return
+        }
+        res(true)
+      })
     })
-    return success
   }
 }
