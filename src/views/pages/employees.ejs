@@ -1,24 +1,40 @@
 <!DOCTYPE html>    
 <div>
-     
+     <div>
+     <form action="/employees/new">
+          <button type="submit">adicionar novo empregado</button>
+     </form>
+     </div>
+     <div>
+          <form>
+
+          <button name="order" value="<%= order %>">
+               Created at
+          </button>
+
+          <button name="groupby" value="company">
+               company name
+          </button>
+          </form>
+     </div>
 <ul>
-     <% employees.forEach(function(mascot) { %>
+     <% employees.forEach(function(employee) { %>
           <li>
                <p>
-                    Nome: <%= mascot.name %>
+                    Nome: <%= employee.name %>
                </p>
 
                <p>
-                    email: <%= mascot.email %>
+                    email: <%= employee.email %>
                </p>
                <p>
-                    email: <%= mascot.telephone %>
+                    email: <%= employee.telephone %>
                </p>
                <p>
-                    email: <%= mascot.company %>
+                    company: <%= employee.company %>
                </p>
 
-               <form action="/employees/<%= mascot.id %>/edit">
+               <form action="/employees/<%= employee.id %>/edit">
                <button>Editar</button>
                </form>
           </li>
