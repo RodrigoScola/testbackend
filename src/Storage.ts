@@ -3,6 +3,10 @@ import { SQLclient } from "./server"
 
 require("dotenv").config()
 
+export enum TABLENAMES {
+  EMPLOYEES = "employees",
+}
+
 export type QueryResultType<T> = {
   RowDataPacket: T
 }
@@ -16,20 +20,34 @@ export const s3Bucket = new AWS.S3({
 })
 
 export interface MyBucket {
-  getOne<T>(identifier: string): Promise<T | null>
+  getOne<T>(identifier: string): Promise<T | string | null>
   getAll<T>(identifier: string): Promise<T | null>
-  upload<T>(identifier: string, contents: T): Promise<T>
+  upload<T>(contents: any, identifier: string): Promise<T>
   update(identifier: string, contents: any): void
 }
 
+export class DataTransformer {
+  public static orderBy<T>(key: keyof T, items: T[], order: "asc" | "desc") {
+    items.sort((a: T, b: T) =>
+      order === "desc" ? (b[key] > a[key] ? 1 : -1) : a[key] > b[key] ? 1 : -1
+    )
+  }
+  public static groupBy<T>(property: keyof T, items: T[]) {
+    items.sort((a: T, b: T) => (a[property] > b[property] ? 1 : -1))
+  }
+}
+
 export class SQLBucket implements MyBucket {
-  constructor(private tablename: string) {}
+  public tableName: TABLENAMES
+  constructor(private tablename: TABLENAMES) {
+    this.tableName = tablename
+  }
 
   static async getAll<T>(tablename: string): Promise<T> {
     return new Promise((res, rej) => {
       const a = SQLclient.query(
         `select * from ${tablename} order by created_at desc `,
-        (error, result, field) => {
+        (error, result) => {
           if (error) rej(error)
           if (typeof result !== "undefined") {
             res(result as Promise<T>)
@@ -39,6 +57,8 @@ export class SQLBucket implements MyBucket {
       )
     })
   }
+
+  // just a wrapper for the static `Bucket.getAll` function
   async getAll<T>(): Promise<T> {
     return await SQLBucket.getAll(this.tablename)
   }
@@ -57,13 +77,17 @@ export class SQLBucket implements MyBucket {
       )
     })
   }
+
+  // instead of writing the individual columns, this accepts an object and generates the query based on it's keys
+  // { name: "jerry", age: 28 } becomes "name = ?, age = ?".
+  // we dont use the `entries` because they need to be escaped later on
   public static ObjectToSql(info: object): string {
     const keys = Object.keys(info)
 
     return keys.join(" = ?, ") + " = ? "
   }
 
-  async update<T extends object>(id: string, info: T) {
+  async update<T extends Record<string, any>>(id: string, info: T) {
     return new Promise((res, rej) => {
       const query: string =
         "update " + this.tablename + " set " + SQLBucket.ObjectToSql(info)
@@ -71,7 +95,7 @@ export class SQLBucket implements MyBucket {
       SQLclient.query(
         `${query} where id = ${SQLclient.escape(id)}`,
         [...Object.values<string>(info)],
-        (error, result, field) => {
+        (error, result) => {
           if (error) {
             rej(error)
           }
@@ -81,12 +105,12 @@ export class SQLBucket implements MyBucket {
     })
   }
 
-  upload<T>(name: string, contents: any): Promise<T> {
+  static upload<T>(tablename: TABLENAMES, contents: any): Promise<T> {
     return new Promise((res, rej) => {
       const a = SQLclient.query(
-        `insert into ${name} set ?`,
+        `insert into ${tablename} set ?`,
         contents,
-        (error, result, field) => {
+        (error, result) => {
           if (error) {
             rej(error)
           }
@@ -94,6 +118,9 @@ export class SQLBucket implements MyBucket {
         }
       )
     })
+  }
+  async upload<T>(info: T): Promise<T> {
+    return await SQLBucket.upload(this.tablename, info)
   }
 }
 
@@ -154,7 +181,7 @@ export class S3Bucket implements MyBucket {
       }
     })
   }
-  public getOne<T extends string = string>(filename: string): Promise<T> {
+  public getOne(filename: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
       try {
         s3Bucket.getObject(
@@ -177,7 +204,7 @@ export class S3Bucket implements MyBucket {
       } catch (err) {}
     })
   }
-  public upload<T>(identifier: string, contents: string): Promise<T> {
+  public upload<T extends string>(contents: T, identifier: string): Promise<T> {
     return new Promise(async (resolve, reject) => {
       try {
         const params = {

@@ -1,31 +1,43 @@
 import { Router } from "express"
-import { Employee, EmployeeInfo, Employees } from "../Employee"
-import { SQLBucket } from "../Storage"
+import {
+  EmployeeInfo,
+  Employees,
+  HiredEmployee,
+  HiredEmployeeInfo,
+} from "../Employee"
+import { DataTransformer, SQLBucket, TABLENAMES } from "../Storage"
 
 export const employeeRouter = Router()
 
 employeeRouter.get("/employees/", async (req, res, next) => {
-  const s = await Employees.getAllEmployees(new SQLBucket("employees"))
-  let order = "desc"
-  let group = "none"
+  let currentEmployees = await Employees.getAllEmployees(
+    new SQLBucket(TABLENAMES.EMPLOYEES)
+  )
 
-  if (typeof req.query.order !== undefined) {
-    order = req.query.order as string
-  }
-  if (typeof req.query.groupby !== undefined) {
-    group = req.query.groupby as string
+  if (currentEmployees.length <= 0) {
+    return res.render("pages/employees", {
+      employees: currentEmployees,
+      order: req.query.order == "desc" ? "asc" : "desc",
+    })
   }
 
-  if (req.query.order == "desc") {
-    s = s.reverse()
+  if (req.query.order == "desc" || req.query.order == "asc") {
+    DataTransformer.orderBy("created_at", currentEmployees, req.query.order)
   }
-  if (group == "company") {
-    s = s.sort((a, b) => (a.company > b.company ? 1 : -1))
+
+  if (
+    typeof req.query.groupby !== "undefined" &&
+    Object.keys(currentEmployees[0]).includes(req.query.groupby as string)
+  ) {
+    DataTransformer.groupBy(
+      req.query.groupby as keyof HiredEmployeeInfo,
+      currentEmployees
+    )
   }
 
   res.render("pages/employees", {
-    employees: s,
-    order: order == "desc" ? "asc" : "desc",
+    employees: currentEmployees,
+    order: req.query.order == "desc" ? "asc" : "desc",
   })
 })
 
@@ -33,10 +45,12 @@ employeeRouter.get("/employees/new", async (req, res, next) => {
   res.render("pages/new_employee")
 })
 employeeRouter.post("/employees/new", async (req, res, next) => {
-  const employeebucket = new SQLBucket("employees")
-  if (Employee.isValidEmployee(req.body)) {
-    const employee = Employee.NewEmployee(req.body as unknown as EmployeeInfo)
-    await employeebucket.upload(`employees/${employee.id}.json`, employee)
+  const employeebucket = new SQLBucket(TABLENAMES.EMPLOYEES)
+  if (HiredEmployee.isValidEmployee(req.body)) {
+    const employee = Employees.NewEmployee(req.body as unknown as EmployeeInfo)
+
+    await employeebucket.upload(employee)
+
     return res.redirect("/employees")
   }
   res.json({
@@ -48,7 +62,7 @@ employeeRouter.param("employeeid", async (req, res, next, employeeid) => {
 
   const employee = await Employees.getEmployee(
     employeeid,
-    new SQLBucket("employees")
+    new SQLBucket(TABLENAMES.EMPLOYEES)
   )
 
   if (!employee) {
@@ -67,18 +81,17 @@ employeeRouter.get("/employees/:employeeid/edit", async (req, res, next) => {
 employeeRouter.post("/employees/:employeeid/edit", async (req, res, next) => {
   const emp = req.employee
 
-  const isValid = Employee.isValidEmployee(req.body)
-  console.log(isValid)
+  const isValid = HiredEmployee.isValidEmployee(req.body)
   if (isValid) {
     await Employees.updateEmployee(
       {
         ...req.body,
         id: req.params.employeeid,
       },
-      new SQLBucket("employees")
+      new SQLBucket(TABLENAMES.EMPLOYEES)
     )
     const employees = await Employees.getAllEmployees(
-      new SQLBucket("employees")
+      new SQLBucket(TABLENAMES.EMPLOYEES)
     )
     return res.render("pages/employees", { employees: employees })
   }
