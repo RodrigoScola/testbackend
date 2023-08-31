@@ -1,15 +1,9 @@
 import AWS from "aws-sdk"
+import { BucketNames } from "./constants"
 import { SQLclient } from "./server"
+import { TABLENAMES } from "./types"
 
 require("dotenv").config()
-
-export enum TABLENAMES {
-  EMPLOYEES = "employees",
-}
-
-export type QueryResultType<T> = {
-  RowDataPacket: T
-}
 
 export const s3Bucket = new AWS.S3({
   region: process.env.AWS_S3_BUCKET_REGION,
@@ -125,8 +119,8 @@ export class SQLBucket implements MyBucket {
 }
 
 export class S3Bucket implements MyBucket {
-  public bucketName: string
-  constructor(bucketName: string) {
+  public bucketName: BucketNames
+  constructor(bucketName: BucketNames) {
     this.bucketName = bucketName
   }
 
@@ -198,7 +192,7 @@ export class S3Bucket implements MyBucket {
               reject(new Error("Failed to get body"))
               return
             }
-            resolve(data.Body.toString() as T)
+            resolve(data.Body.toString())
           }
         )
       } catch (err) {}

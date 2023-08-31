@@ -1,16 +1,6 @@
 import { randomUUID } from "crypto"
 import { MyBucket, SQLBucket } from "./Storage"
-
-export interface EmployeeInfo {
-  name: string
-  email: string
-  telephone: string
-  company: string
-}
-export interface HiredEmployeeInfo extends EmployeeInfo {
-  created_at: string
-  id: string
-}
+import { EmployeeInfo, HiredEmployeeInfo } from "./types"
 
 export class Employees {
   public static async getEmployee(

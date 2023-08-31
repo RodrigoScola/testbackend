@@ -1,10 +1,10 @@
 import express, { Router } from "express"
-import { MyBucket } from "./Storage"
-import { User } from "./User"
-
 import mysql from "mysql"
-import { BASE_MESSAGE_URL } from "./constants"
+import { MyBucket, S3Bucket } from "./Storage"
+import { User } from "./User"
+import { BASE_MESSAGE_URL, BucketNames, DirectoryNames } from "./constants"
 import { employeeRouter } from "./routes/employees"
+import { MessageInfo, NewMessageInfo } from "./types"
 
 require("dotenv").config()
 
@@ -16,19 +16,12 @@ export const SQLclient = mysql.createConnection({
   user: process.env.AWS_RDS_USERNAME,
 })
 
-type NewMessageInfo = {
-  postId: number
-  id: number
-  name: string
-  email: string
-  body: string
-}
-type MessageInfo = NewMessageInfo & {
-  user_name: string
-}
-
 const app = express()
+const route = Router()
 
+app.use(express.json())
+app.use("/", route)
+app.use("/employees", employeeRouter)
 app.set("views", __dirname + "/views")
 app.set("view engine", "ejs")
 app.use(express.urlencoded({ extended: true }))
@@ -76,45 +69,59 @@ export class MessageProcessor {
   }
 }
 
-const route = Router()
-
-app.use(express.json())
-
 route.get("/", (req, res) => {
   res.json({
     response: "Hello World",
   })
 })
 
-route.get("/messages", async (req, res) => {
+route.get("/messages/startprocess", async (req, res) => {
   const fetchedMessages = await MessageProcessor.FetchMessagesFromURL(
     BASE_MESSAGE_URL
   )
 
+  const bucket = new S3Bucket(BucketNames.BACKEND_MESSAGES_BUCKET_NAME)
+
+  // check if the messages are already in the bucket
+  const totalMessages = await bucket.ListFiles(
+    `/${DirectoryNames.BASE_MESSAGES_DIRECTORY}`
+  )
+
+  if (
+    typeof totalMessages.Contents != "undefined" &&
+    totalMessages?.Contents?.length <= 0
+  ) {
+    let promises: any[] = []
+    promises.push(
+      bucket.upload("messages.json", JSON.stringify(fetchedMessages))
+    )
+
+    fetchedMessages.forEach((item) => {
+      promises.push(
+        bucket.upload(
+          JSON.stringify(item),
+          `${DirectoryNames.BASE_MESSAGES_DIRECTORY}/message_` +
+            item.id +
+            ".json"
+        )
+      )
+    })
+
+    await Promise.all(promises)
+  }
   res.json({
     treatments: MessageProcessor.AddUsernamesToMessages(fetchedMessages),
   })
 })
 
-app.use("/", route)
-app.use("/employees", employeeRouter)
-
-const connectDatabase = () => {
-  return new Promise((resolve, reject) => {
-    SQLclient.connect((err) => {
-      if (err) {
-        console.error(err)
-        reject(err)
-        return
-      }
-      console.log("> Successfully connected to MySQL database")
-      resolve(true)
-    })
-  })
-}
-
 app.listen(5000, async () => {
-  connectDatabase()
+  SQLclient.connect((err) => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    console.log("> Successfully connected to MySQL database")
+  })
 
   console.log("Listening in PORT 5000")
 })

@@ -1,11 +1,7 @@
 import { Router } from "express"
-import {
-  EmployeeInfo,
-  Employees,
-  HiredEmployee,
-  HiredEmployeeInfo,
-} from "../Employee"
+import { Employees, HiredEmployee } from "../Employee"
 import { DataTransformer, SQLBucket, TABLENAMES } from "../Storage"
+import { EmployeeInfo, HiredEmployeeInfo } from "../types"
 
 export const employeeRouter = Router()
 
