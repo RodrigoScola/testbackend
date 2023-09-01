@@ -2,7 +2,7 @@
 <div>
      <div>
      <form action="/funcionarios/novo">
-          <button type="submit">adicionar novo empregado</button>
+          <button type="submit">adicionar novo funcionario</button>
      </form>
      </div>
      <div>
@@ -12,8 +12,8 @@
                Criado em
           </button>
 
-          <button name="agruparpor" value="company">
-               company name
+          <button name="agruparpor" value="empresa">
+               nome da empresa
           </button>
           </form>
      </div>
@@ -28,10 +28,10 @@
                     email: <%= funcionario.email %>
                </p>
                <p>
-                    email: <%= funcionario.telephone %>
+                    telefone: <%= funcionario.telefone %>
                </p>
                <p>
-                    company: <%= funcionario.empresa %>
+                    empresa: <%= funcionario.empresa %>
                </p>
 
                <form action="/funcionarios/<%= funcionario.id %>/editar">

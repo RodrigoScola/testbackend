@@ -23,7 +23,7 @@ export class Funcionarios {
     return arquivo as InfoEmpregadoContratado;
   }
 
-  public static async updateEmployee(
+  public static async updateFuncionario(
     funcionario: FuncionarioContratadoInfo,
     armazenamento: Armazenamento
   ): Promise<FuncionarioContratadoInfo | null> {
@@ -38,7 +38,7 @@ export class Funcionarios {
     }
   }
 
-  public static async getAllEmployees(
+  public static async getTodosFuncionarios(
     armazenamento: SQLArmazenamento
   ): Promise<FuncionarioContratado[]> {
     const arquivos = await armazenamento.getTodos<FuncionarioContratado[]>();

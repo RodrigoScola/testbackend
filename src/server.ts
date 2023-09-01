@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import mysql from "mysql";
-import { employeeRouter } from "./rotas/funcionariosRouter";
+import { funcionariosRouter } from "./rotas/funcionariosRouter";
 import { messagesRouter } from "./rotas/messagesRouter";
 
 require("dotenv").config();
@@ -17,12 +17,12 @@ const app = express();
 const rota = Router();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/", rota);
 app.use("/mensagens", messagesRouter);
-app.use("/funcionarios", employeeRouter);
+app.use("/funcionarios", funcionariosRouter);
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true }));
 
 rota.get("/", (req, res) => {
   res.json({

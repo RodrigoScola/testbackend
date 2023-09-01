@@ -1,35 +1,33 @@
-<!DOCTYPE html>    
+<!DOCTYPE html>
 <html lang="en">
+     <body class="container">
+          <form method="post" action="editar">
+               <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                    <label>
+                         Nome do Funcionario:
+                         <input type="text" required placeholder="nome" name="nome" value="<%= funcionario.nome %>">
+                    </label>
+                    <label>
+                         Email do funcionario:
+                         <input type="email" disabled name="email" required value="<%= funcionario.email %>"
+                              placeholder="email.do_empregado@aqui.com">
+                    </label>
+                    <label>
+                         Telefone do Funcionario:
+                         <input type="tel" required name="telefone" value="<%= funcionario.telefone %>"
+                              placeholder="(54) 99198-2471">
+                    </label>
+                    <label>
+                         Empresa do Funcionario:
+                         <input type="text" value="<%= funcionario.empresa %>" required name="empresa"
+                              placeholder="nome da empresa">
+                    </label>
+                    <button type="submit">
+                         Enviar
+                    </button>
+               </div>
 
+          </form>
+     </body>
 
-<body class="container">
-
-
-
-
-     <form method="post"  action="editar">
-          <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-          <label>
-               Nome do Funcionario: 
-          <input type="text" required placeholder="nome" name="nome" value="<%= funcionario.nome %>">
-          </label>
-          <label>
-               Email do funcionario: 
-          <input type="email"  disabled name="email" required value="<%= employee.email %>" placeholder="email.do_empregado@aqui.com">
-          </label>
-          <label>
-               Telefone do Funcionario: 
-          <input type="tel" required name="telefone" value="<%= funcionario.telefone %>" placeholder="(54) 99198-2471">
-          </label>
-          <label>
-               Empresa do Funcionario: 
-          <input type="text" value="<%= funcionario.empresa %>" required name="empresa" placeholder="nome da empresa">
-          </label>
-<button type="submit">
-     Enviar
-</button>
-          </div>
-
-     </form>
-</body>
 </html>

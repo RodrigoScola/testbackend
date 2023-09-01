@@ -7,54 +7,55 @@ import {
   Nomes_de_Tabelas,
 } from "../types";
 
-export const employeeRouter = Router();
+export const funcionariosRouter = Router();
 
-employeeRouter.get("/", async (req, res, next) => {
-  let currentEmployees = await Funcionarios.getAllEmployees(
+funcionariosRouter.get("/", async (req, res) => {
+  let funcionarios = await Funcionarios.getTodosFuncionarios(
     new SQLArmazenamento(Nomes_de_Tabelas.FUNCIONARIOS)
   );
 
-  if (currentEmployees.length <= 0) {
+  const agruparpor = (req.query.agruparpor ||
+    "created_at") as keyof FuncionarioContratadoInfo;
+
+  const ordem = req.query.ordem == "desc" ? "asc" : "desc";
+
+  if (funcionarios.length <= 0) {
     return res.render("paginas/funcionarios", {
-      employees: currentEmployees,
-      agruparpor: req.query.agruparpor == "desc" ? "asc" : "desc",
+      funcionarios: [],
+      ordem: req.query.order == "desc" ? "asc" : "desc",
     });
   }
 
-  if (req.query.agruparpor == "desc" || req.query.agruparpor == "asc") {
-    DataTransformer.ordenarPor(
-      currentEmployees,
-      "created_at",
-      req.query.agruparpor
-    );
+  if (ordem == "desc" || ordem == "asc") {
+    DataTransformer.ordenarPor(funcionarios, "created_at", ordem);
   }
 
-  if (
-    typeof req.query.agruparpor !== "undefined" &&
-    Object.keys(currentEmployees[0]).includes(req.query.groupby as string)
-  ) {
-    DataTransformer.agruparPor(
-      req.query.agruparpor as keyof FuncionarioContratadoInfo,
-      currentEmployees
-    );
+  if (Object.keys(funcionarios[0]).includes(agruparpor)) {
+    DataTransformer.agruparPor(agruparpor, funcionarios);
   }
 
   res.render("paginas/funcionarios", {
-    employees: currentEmployees,
-    order: req.query.ordem == "desc" ? "asc" : "desc",
+    funcionarios: funcionarios,
+    ordem,
   });
 });
 
-employeeRouter.get("/new", async (req, res, next) => {
+funcionariosRouter.get("/novo", async (req, res, next) => {
   res.render("paginas/novo_funcionario");
 });
-employeeRouter.post("/new", async (req, res, next) => {
+
+funcionariosRouter.post("/novo", async (req, res, next) => {
   const armazenamentoFuncionarios = new SQLArmazenamento(
     Nomes_de_Tabelas.FUNCIONARIOS
   );
-  if (!FuncionarioContratado.funcionarioValido(req.body)) {
+
+  if (
+    !req.body.email ||
+    !req.body.telefone ||
+    !FuncionarioContratado.funcionarioValido(req.body)
+  ) {
     return res.json({
-      message: "funcionario invalido",
+      error: "funcionario invalido",
     });
   }
 
@@ -66,42 +67,54 @@ employeeRouter.post("/new", async (req, res, next) => {
 
   return res.redirect("/funcionarios");
 });
-employeeRouter.param("idEmpregado", async (req, res, next, idEmpregado) => {
-  req.idEmpregado = idEmpregado;
+funcionariosRouter.param(
+  "idFuncionario",
+  async (req, res, next, idFuncionario) => {
+    req.idFuncionario = idFuncionario;
 
-  const empregado = await Funcionarios.getFuncionario(
-    idEmpregado,
+    const funcionario = await Funcionarios.getFuncionario(
+      idFuncionario,
+      new SQLArmazenamento(Nomes_de_Tabelas.FUNCIONARIOS)
+    );
+
+    if (!funcionario) {
+      return res.status(404).send({ error: "id de empregado incorreto." });
+    }
+    req.funcionario = funcionario;
+    next();
+  }
+);
+funcionariosRouter.get("/:idFuncionario/editar", async (req, res) => {
+  const funcionario = req.funcionario;
+
+  res.render("paginas/editar_funcionario", { funcionario: funcionario });
+});
+funcionariosRouter.post("/:idFuncionario/editar", async (req, res) => {
+  const funcionario = req.funcionario;
+
+  // em caso o front mande um Objeto vazio ou invalido
+  const isValid = FuncionarioContratado.funcionarioValido({
+    ...funcionario,
+    ...req.body,
+  });
+
+  if (!isValid) {
+    return res.json({
+      erro: "funcionario invalido",
+    });
+  }
+  const novoFuncionario = Funcionarios.novoFuncionario(req.body);
+  await Funcionarios.updateFuncionario(
+    {
+      ...novoFuncionario,
+      email: funcionario!.email,
+
+      id: req.params.idFuncionario,
+    },
     new SQLArmazenamento(Nomes_de_Tabelas.FUNCIONARIOS)
   );
-
-  if (!empregado) {
-    return res.status(404).send({ error: "id de empregado incorreto." });
-  }
-  req.empregado = empregado;
-  next();
-});
-employeeRouter.get("/:idEmpregado/editar", async (req, res) => {
-  const empregado = req.empregado;
-
-  res.render("paginas/editar_empregado", { empregado: empregado });
-});
-employeeRouter.post("/:idEmpregado/editar", async (req, res) => {
-  const emp = req.empregado;
-
-  const isValid = FuncionarioContratado.funcionarioValido(req.body);
-  if (isValid) {
-    await Funcionarios.updateEmployee(
-      {
-        ...req.body,
-        id: req.params.idEmpregado,
-      },
-      new SQLArmazenamento(Nomes_de_Tabelas.FUNCIONARIOS)
-    );
-    const employees = await Funcionarios.getAllEmployees(
-      new SQLArmazenamento(Nomes_de_Tabelas.FUNCIONARIOS)
-    );
-    return res.render("paginas/funcionarios", { employees: employees });
-  }
-
-  res.render("paginas/editar_empregado", { employee: emp });
+  const funcionarios = await Funcionarios.getTodosFuncionarios(
+    new SQLArmazenamento(Nomes_de_Tabelas.FUNCIONARIOS)
+  );
+  return res.render("paginas/funcionarios", { funcionarios: funcionarios });
 });
