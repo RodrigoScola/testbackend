@@ -1,29 +1,25 @@
-export type NewMessageInfo = {
-  postId: number
-  id: number
-  name: string
-  email: string
-  body: string
-}
-export type MessageInfo = NewMessageInfo & {
-  user_name: string
-}
-export interface EmployeeInfo {
-  name: string
-  email: string
-  telephone: string
-  company: string
-}
-
-export interface HiredEmployeeInfo extends EmployeeInfo {
-  created_at: string
-  id: string
+export type NovaMensagemInfo = {
+  postId: number;
+  id: number;
+  name: string;
+  email: string;
+  body: string;
+};
+export type MensagemInfo = NovaMensagemInfo & {
+  user_name: string;
+};
+export interface FuncionarioInfo {
+  nome: string;
+  email: string;
+  telefone: string;
+  empresa: string;
 }
 
-export enum TABLENAMES {
-  EMPLOYEES = "employees",
+export interface FuncionarioContratadoInfo extends FuncionarioInfo {
+  created_at: string;
+  id: string;
 }
 
-export type QueryResultType<T> = {
-  RowDataPacket: T
+export enum Nomes_de_Tabelas {
+  FUNCIONARIOS = "funcionarios",
 }

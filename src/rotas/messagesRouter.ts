@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { MessageProcessor } from "../MessageProcessor";
-import { S3Storage } from "../Storage";
+import { S3Storage } from "../Armazenamento";
+import { ProcessadorDeMensagens } from "../ProcessadorMensagens";
 import {
   BASE_MESSAGE_URL,
   MessagesDirectoryNames,
@@ -9,9 +9,9 @@ import {
 
 export const messagesRouter = Router();
 
-messagesRouter.get("/startprocess", async (req, res) => {
+messagesRouter.get("/comecarprocesso", async (req, res) => {
   try {
-    const fetchedMessages = await MessageProcessor.FetchMessagesFromURL(
+    const mensagensDaApi = await ProcessadorDeMensagens.FetchMessagesFromURL(
       BASE_MESSAGE_URL
     );
 
@@ -23,33 +23,35 @@ messagesRouter.get("/startprocess", async (req, res) => {
     );
 
     if (
-      typeof totalMessages.Contents != "undefined" &&
-      totalMessages?.Contents?.length <= 0
+      true
+      // typeof totalMessages.Contents != "undefined" &&
+      // totalMessages?.Contents?.length <= 0
     ) {
       let promises: any[] = [];
 
-      fetchedMessages.forEach((item) => {
-        if (item.postId) {
-          if (item) {
-            promises.push(
-              bucket.upload(
-                JSON.stringify(item),
-                `${MessagesDirectoryNames.BASE_MESSAGES_DIRECTORY}/message_` +
-                  item.id +
-                  ".json"
-              )
-            );
-          }
-        }
-      });
+      // mensagensDaApi.forEach((item) => {
+      //   if (item.postId) {
+      //     if (item) {
+      //       promises.push(
+      //         bucket.upload(
+      //           JSON.stringify(item),
+      //           `${MessagesDirectoryNames.BASE_MESSAGES_DIRECTORY}/message_` +
+      //             item.id +
+      //             ".json"
+      //         )
+      //       );
+      //     }
+      //   }
+      // });
       promises.push(
-        bucket.upload(JSON.stringify(fetchedMessages), "base_messages.json")
+        bucket.upload(JSON.stringify(mensagensDaApi), "base_messages2.json")
       );
       await Promise.all(promises);
     }
 
     res.json({
-      treatments: MessageProcessor.AddUsernamesToMessages(fetchedMessages),
+      treatments:
+        ProcessadorDeMensagens.AdicionarUsernamesNasMensagens(mensagensDaApi),
     });
   } catch (e) {
     return res.json({
@@ -61,7 +63,7 @@ messagesRouter.get("/startprocess", async (req, res) => {
 messagesRouter.get("/groupedmessages", async (req, res) => {
   const bucket = new S3Storage(StorageNames.BACKEND_MESSAGES_BUCKET_NAME);
 
-  const m = await bucket.getAll(
+  const m = await bucket.getTodos(
     MessagesDirectoryNames.BASE_MESSAGES_GROUPED_BY
   );
 
@@ -73,7 +75,7 @@ messagesRouter.get("/groupedmessages", async (req, res) => {
 messagesRouter.get("/with_usernames", async (req, res) => {
   const bucket = new S3Storage(StorageNames.BACKEND_MESSAGES_BUCKET_NAME);
 
-  const m = await bucket.getAll(
+  const m = await bucket.getTodos(
     MessagesDirectoryNames.BASE_MESSAGES_WITH_USERNAME
   );
 
@@ -86,7 +88,7 @@ messagesRouter.get("/with_usernames", async (req, res) => {
 messagesRouter.get("/messages/", async (req, res) => {
   const bucket = new S3Storage(StorageNames.BACKEND_MESSAGES_BUCKET_NAME);
 
-  const m = await bucket.getAll<string[]>(
+  const m = await bucket.getTodos<string[]>(
     MessagesDirectoryNames.BASE_MESSAGES_DIRECTORY
   );
 

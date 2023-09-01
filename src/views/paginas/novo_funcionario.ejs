@@ -1,33 +1,27 @@
 <!DOCTYPE html>    
 <html lang="en">
 
-<head>
-     <%- include('../partials/head'); %>
-</head>
 
 <body class="container">
 
 
-     <header>
-          <%- include('../partials/header'); %>
-     </header>
      <form method="post" action="new">
           <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
 
           <label>
-               Nome do Empregado: 
+               Nome do Funcionario: 
           <input type="text" required placeholder="nome" name="name">
           </label>
           <label>
-               Email do Empregado: 
+               Email do Funcionario: 
           <input type="email" name="email" required placeholder="email.do_empregado@aqui.com">
           </label>
           <label>
-               Telefone do Empregado: 
+               Telefone do Funcionario: 
           <input type="tel" required name="telephone" placeholder="(54) 99198-2471">
           </label>
           <label>
-               Empresa do Empregado: 
+               Empresa do Funcionario: 
           <input type="text" required name="company" placeholder="nome da empresa">
           </label>
 <button type="submit">
@@ -36,8 +30,5 @@
           </div>
 
      </form>
-<footer>
-     <%- include('../partials/footer'); %>
-</footer>
 </body>
 </html>

@@ -1,13 +1,12 @@
-import { HiredEmployeeInfo } from "./src/Employee";
+import { HiredEmployeeInfo } from "./src/Funcionarios";
 
 export {};
 
 declare global {
   namespace Express {
     export interface Request {
-      user?: Employee;
-      employeeId?: string;
-      employee?: HiredEmployeeInfo;
+      idEmpregado?: string;
+      empregado?: HiredEmployeeInfo;
     }
   }
 }

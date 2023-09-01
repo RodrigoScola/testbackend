@@ -1,40 +1,40 @@
 <!DOCTYPE html>    
 <div>
      <div>
-     <form action="/employees/new">
+     <form action="/funcionarios/novo">
           <button type="submit">adicionar novo empregado</button>
      </form>
      </div>
      <div>
           <form>
 
-          <button name="order" value="<%= order %>">
-               Created at
+          <button name="ordem" value="<%= ordem %>">
+               Criado em
           </button>
 
-          <button name="groupby" value="company">
+          <button name="agruparpor" value="company">
                company name
           </button>
           </form>
      </div>
 <ul>
-     <% employees.forEach(function(employee) { %>
+     <% funcionarios.forEach(function(funcionario) { %>
           <li>
                <p>
-                    Nome: <%= employee.name %>
+                    Nome: <%= funcionario.nome %>
                </p>
 
                <p>
-                    email: <%= employee.email %>
+                    email: <%= funcionario.email %>
                </p>
                <p>
-                    email: <%= employee.telephone %>
+                    email: <%= funcionario.telephone %>
                </p>
                <p>
-                    company: <%= employee.company %>
+                    company: <%= funcionario.empresa %>
                </p>
 
-               <form action="/employees/<%= employee.id %>/edit">
+               <form action="/funcionarios/<%= funcionario.id %>/editar">
                <button>Editar</button>
                </form>
           </li>
