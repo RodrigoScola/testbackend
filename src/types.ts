@@ -19,3 +19,11 @@ export interface HiredEmployeeInfo extends EmployeeInfo {
   created_at: string
   id: string
 }
+
+export enum TABLENAMES {
+  EMPLOYEES = "employees",
+}
+
+export type QueryResultType<T> = {
+  RowDataPacket: T
+}

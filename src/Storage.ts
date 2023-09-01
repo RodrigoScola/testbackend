@@ -1,9 +1,9 @@
-import AWS from "aws-sdk"
-import { BucketNames } from "./constants"
-import { SQLclient } from "./server"
-import { TABLENAMES } from "./types"
+import AWS from "aws-sdk";
+import { StorageNames } from "./constants";
+import { SQLclient } from "./server";
+import { TABLENAMES } from "./types";
 
-require("dotenv").config()
+require("dotenv").config();
 
 export const s3Bucket = new AWS.S3({
   region: process.env.AWS_S3_BUCKET_REGION,
@@ -11,30 +11,32 @@ export const s3Bucket = new AWS.S3({
     accessKeyId: process.env.AWS_S3_BUCKET_ACCESS_KEY_ID || "",
     secretAccessKey: process.env.AWS_S3_BUCKET_SECRET_KEY_ID || "",
   },
-})
+});
 
-export interface MyBucket {
-  getOne<T>(identifier: string): Promise<T | string | null>
-  getAll<T>(identifier: string): Promise<T | null>
-  upload<T>(contents: any, identifier: string): Promise<T>
-  update(identifier: string, contents: any): void
+// implementation of the strategy pattern to fetch data from different storages
+// in the future, need to make it different interfaces instead of 1
+export interface MyStorage {
+  getOne<T = string>(identifier: string): Promise<T | null>;
+  getAll<T = string>(identifier: string): Promise<T | null>;
+  upload<T>(contents: any, identifier: string): Promise<T>;
+  update(identifier: string, contents: any): void;
 }
 
 export class DataTransformer {
   public static orderBy<T>(key: keyof T, items: T[], order: "asc" | "desc") {
     items.sort((a: T, b: T) =>
       order === "desc" ? (b[key] > a[key] ? 1 : -1) : a[key] > b[key] ? 1 : -1
-    )
+    );
   }
   public static groupBy<T>(property: keyof T, items: T[]) {
-    items.sort((a: T, b: T) => (a[property] > b[property] ? 1 : -1))
+    items.sort((a: T, b: T) => (a[property] > b[property] ? 1 : -1));
   }
 }
 
-export class SQLBucket implements MyBucket {
-  public tableName: TABLENAMES
+export class SQLStorage implements MyStorage {
+  public tableName: TABLENAMES;
   constructor(private tablename: TABLENAMES) {
-    this.tableName = tablename
+    this.tableName = tablename;
   }
 
   static async getAll<T>(tablename: string): Promise<T> {
@@ -42,19 +44,19 @@ export class SQLBucket implements MyBucket {
       const a = SQLclient.query(
         `select * from ${tablename} order by created_at desc `,
         (error, result) => {
-          if (error) rej(error)
+          if (error) rej(error);
           if (typeof result !== "undefined") {
-            res(result as Promise<T>)
+            res(result as Promise<T>);
           }
-          rej([])
+          rej([]);
         }
-      )
-    })
+      );
+    });
   }
 
   // just a wrapper for the static `Bucket.getAll` function
   async getAll<T>(): Promise<T> {
-    return await SQLBucket.getAll(this.tablename)
+    return await SQLStorage.getAll(this.tablename);
   }
   getOne<T>(id: string): Promise<T> {
     return new Promise((res, rej) => {
@@ -64,39 +66,39 @@ export class SQLBucket implements MyBucket {
           " where id = " +
           SQLclient.escape(id),
         (error, result, field) => {
-          if (error || result.length == 0) rej(error)
+          if (error || result.length == 0) rej(error);
 
-          res(result[0])
+          res(result[0]);
         }
-      )
-    })
+      );
+    });
   }
 
   // instead of writing the individual columns, this accepts an object and generates the query based on it's keys
   // { name: "jerry", age: 28 } becomes "name = ?, age = ?".
   // we dont use the `entries` because they need to be escaped later on
   public static ObjectToSql(info: object): string {
-    const keys = Object.keys(info)
+    const keys = Object.keys(info);
 
-    return keys.join(" = ?, ") + " = ? "
+    return keys.join(" = ?, ") + " = ? ";
   }
 
   async update<T extends Record<string, any>>(id: string, info: T) {
     return new Promise((res, rej) => {
       const query: string =
-        "update " + this.tablename + " set " + SQLBucket.ObjectToSql(info)
+        "update " + this.tablename + " set " + SQLStorage.ObjectToSql(info);
 
       SQLclient.query(
         `${query} where id = ${SQLclient.escape(id)}`,
         [...Object.values<string>(info)],
         (error, result) => {
           if (error) {
-            rej(error)
+            rej(error);
           }
-          res(result)
+          res(result);
         }
-      )
-    })
+      );
+    });
   }
 
   static upload<T>(tablename: TABLENAMES, contents: any): Promise<T> {
@@ -106,22 +108,22 @@ export class SQLBucket implements MyBucket {
         contents,
         (error, result) => {
           if (error) {
-            rej(error)
+            rej(error);
           }
-          res(result as Promise<T>)
+          res(result as Promise<T>);
         }
-      )
-    })
+      );
+    });
   }
   async upload<T>(info: T): Promise<T> {
-    return await SQLBucket.upload(this.tablename, info)
+    return await SQLStorage.upload(this.tablename, info);
   }
 }
 
-export class S3Bucket implements MyBucket {
-  public bucketName: BucketNames
-  constructor(bucketName: BucketNames) {
-    this.bucketName = bucketName
+export class S3Storage implements MyStorage {
+  public storageName: StorageNames;
+  constructor(bucketName: StorageNames) {
+    this.storageName = bucketName;
   }
 
   public ListFiles(prefix: string): Promise<AWS.S3.Types.ListObjectsV2Output> {
@@ -129,134 +131,134 @@ export class S3Bucket implements MyBucket {
       try {
         s3Bucket.listObjectsV2(
           {
-            Bucket: this.bucketName,
+            Bucket: this.storageName,
             Prefix: prefix,
           },
           (err, data) => {
             if (err) {
-              reject(err)
-              return
+              reject(err);
+              return;
             }
-            resolve(data)
+            resolve(data);
           }
-        )
+        );
       } catch (err) {
-        reject(err)
-        return
+        reject(err);
+        return;
       }
-    })
+    });
   }
   public async getFiles(filenames: string[]) {
-    let promises: any[] = []
+    let promises: any[] = [];
 
     filenames.forEach((filename) => {
-      promises.push(this.getOne(filename))
-    })
-    return await Promise.all(promises)
+      promises.push(this.getOne(filename));
+    });
+    return await Promise.all(promises);
   }
-  getAll<T>(identifier: string): Promise<T | null> {
+  getAll<T = string>(identifier: string): Promise<T> {
     return new Promise(async (res, rej) => {
       try {
-        const files = await this.ListFiles(identifier)
+        const files = await this.ListFiles(identifier);
 
-        console.log(files)
+        const filenames = files.Contents?.map((file) => file.Key as string);
 
-        const filenames = files.Contents?.map((file) => file.Key as string)
+        const promisses = filenames?.map((filename) => this.getOne(filename));
 
-        const promisses = filenames?.map((filename) => this.getOne(filename))
+        const allFilesString = await Promise.all(promisses as any);
 
-        const allFilesJson = Promise.all(promisses as any)
+        if (allFilesString.length == 0) {
+          rej(new Error("There were no files found"));
+        }
 
-        console.log(allFilesJson)
-
-        res(allFilesJson as Promise<T>) // Promise.all(promisses))
+        res(allFilesString as T); // Promise.all(promisses))
       } catch (err) {
-        rej(err)
+        rej(err);
       }
-    })
+    });
   }
   public getOne(filename: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
       try {
         s3Bucket.getObject(
           {
-            Bucket: this.bucketName,
+            Bucket: this.storageName,
             Key: filename,
           },
           (err, data) => {
             if (err) {
-              reject(err)
-              return
+              reject(err);
+              return;
             }
             if (!data.Body) {
-              reject(new Error("Failed to get body"))
-              return
+              reject(new Error("Failed to get body"));
+              return;
             }
-            resolve(data.Body.toString())
+            resolve(data.Body.toString());
           }
-        )
+        );
       } catch (err) {}
-    })
+    });
   }
   public upload<T extends string>(contents: T, identifier: string): Promise<T> {
     return new Promise(async (resolve, reject) => {
       try {
         const params = {
-          Bucket: this.bucketName,
+          Bucket: this.storageName,
           Key: identifier,
           Body: new Buffer(contents),
-        }
+        };
         s3Bucket.putObject(params, (err: any, data: any) => {
           if (err) {
-            reject(err)
+            reject(err);
           }
-          resolve(data as Promise<T>)
-        })
+          resolve(data as Promise<T>);
+        });
       } catch (err) {
-        console.error(err)
-        reject(err)
+        console.error(err);
+        reject(err);
       }
-    })
+    });
   }
   public async update<T>(filename: string, contents: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
       try {
         const params = {
-          Bucket: this.bucketName,
+          Bucket: this.storageName,
           Key: filename,
           Body: new Buffer(contents),
-        }
+        };
         s3Bucket.putObject(params, (err: any, data: any) => {
           if (err) {
-            console.log(err)
-            reject(err)
+            console.log(err);
+            reject(err);
           }
-          resolve(data)
-        })
+          resolve(data);
+        });
       } catch (err) {
-        reject(err)
+        reject(err);
       }
-    })
+    });
   }
   public static CreateBucket(name: string): Promise<boolean> {
     return new Promise((res, rej) => {
       s3Bucket.createBucket({ Bucket: name }, function (err) {
         if (err) {
-          rej(err)
+          rej(err);
         }
-        res(true)
-      })
-    })
+        res(true);
+      });
+    });
   }
   public static async RemoveBucket(name: string): Promise<boolean> {
     return new Promise(async (res, rej) => {
       await s3Bucket.deleteBucket({ Bucket: name }, function (err) {
         if (err) {
-          rej(err)
-          return
+          rej(err);
+          return;
         }
-        res(true)
-      })
-    })
+        res(true);
+      });
+    });
   }
 }
