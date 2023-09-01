@@ -23,9 +23,7 @@ export class Employees {
     try {
       await bucket.update(employeeInfo.id, employeeInfo);
       const empl = await bucket.getOne<HiredEmployeeInfo>(employeeInfo.id);
-      if (empl) {
-        return empl;
-      }
+      return empl;
     } catch (err) {
       return null;
     }

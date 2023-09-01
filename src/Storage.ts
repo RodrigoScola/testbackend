@@ -14,7 +14,8 @@ export const s3Bucket = new AWS.S3({
 });
 
 // implementation of the strategy pattern to fetch data from different storages
-// in the future, need to make it different interfaces instead of 1
+// in the future, would be smart to make an adapter for the storage
+
 export interface MyStorage {
   getOne<T = string>(identifier: string): Promise<T | null>;
   getAll<T = string>(identifier: string): Promise<T | null>;
@@ -177,7 +178,7 @@ export class S3Storage implements MyStorage {
       }
     });
   }
-  public getOne(filename: string): Promise<string> {
+  public getOne<T = string>(filename: string): Promise<T> {
     return new Promise(async (resolve, reject) => {
       try {
         s3Bucket.getObject(
@@ -194,7 +195,8 @@ export class S3Storage implements MyStorage {
               reject(new Error("Failed to get body"));
               return;
             }
-            resolve(data.Body.toString());
+            // s3 sends a buffer, this is so we return the string
+            resolve(data.Body.toString() as T);
           }
         );
       } catch (err) {}
