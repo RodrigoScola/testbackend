@@ -24,7 +24,7 @@ export interface MyStorage {
 }
 
 export class DataTransformer {
-  public static orderBy<T>(key: keyof T, items: T[], order: "asc" | "desc") {
+  public static orderBy<T>(items: T[], key: keyof T, order: "asc" | "desc") {
     items.sort((a: T, b: T) =>
       order === "desc" ? (b[key] > a[key] ? 1 : -1) : a[key] > b[key] ? 1 : -1
     );

@@ -18,7 +18,7 @@ employeeRouter.get("/employees/", async (req, res, next) => {
   }
 
   if (req.query.order == "desc" || req.query.order == "asc") {
-    DataTransformer.orderBy("created_at", currentEmployees, req.query.order);
+    DataTransformer.orderBy(currentEmployees, "created_at", req.query.order);
   }
 
   if (

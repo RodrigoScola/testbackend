@@ -4,7 +4,7 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "test": "jest --watchAll --verbose",
+    "test": "jest  --verbose --runInBand --detectOpenHandles",
     "build": "tsc",
     "dev": "ts-node-dev --inspect --transpile-only --ignore-watch node_modules src/server.ts",
     "tsc": "tsc",

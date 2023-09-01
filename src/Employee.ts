@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { MyStorage, SQLStorage } from "./Storage";
 import { EmployeeInfo, HiredEmployeeInfo } from "./types";
+import { Validation } from "./utils/Validation";
 
 export class Employees {
   // in the future could add a crude caching by writing the employee object to a map, so there isn't a db call each time we need it
@@ -69,7 +70,13 @@ export abstract class Employee {
     this.telephone = info.telephone;
     this.company = info.company;
   }
-  public static isValidEmployee(n: object) {
+
+  public static isValidEmployee(n: EmployeeInfo) {
+    if (!Validation.isValidEmail(n.email)) {
+      return false;
+    } else if (!Validation.isValidPhoneNumber(n.telephone)) {
+      return false;
+    }
     return true;
   }
 }
