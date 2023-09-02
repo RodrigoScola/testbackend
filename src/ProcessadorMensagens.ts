@@ -5,7 +5,7 @@ import { MensagemInfo, NovaMensagemInfo } from "./types";
 export class ProcessadorDeMensagens {
   // isto acabou nao sendo utilizado por causa das demandas do time, porem se fosse utilizado nessa etapa, o codigo ficaria assim
   // foi tambem utilizado para testar como seria em codigo sql
-  public static AdicionarUsernamesNasMensagens(
+  public static AdicionarUsernames(
     mensagens: NovaMensagemInfo[]
   ): MensagemInfo[] {
     return mensagens.map((mensagem) => {

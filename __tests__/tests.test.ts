@@ -42,7 +42,7 @@ describe("Message Processor test", () => {
       { id: 2, email: "Jayne_Kuhic@sydney.com", user_name: "Jayne Kuhic" },
       { id: 3, email: "Nikita@garfield.biz", user_name: "Nikita" },
     ];
-    const newMessages = ProcessadorDeMensagens.AdicionarUsernamesNasMensagens(
+    const newMessages = ProcessadorDeMensagens.AdicionarUsernames(
       base_messages as NovaMensagemInfo[]
     );
     expect(newMessages).toStrictEqual(with_usernames);

@@ -1,11 +1,11 @@
-export enum StorageNames {
-  BACKEND_MESSAGES_BUCKET_NAME = "backendtestbucket2",
+export enum NomesArmazenamento {
+  NOME_MENSAGENS_BUCKET = "backendtestbucket2",
 }
 // used to make sure that the pathing is correct to find the files
 export enum MessagesDirectoryNames {
-  BASE_MESSAGES_DIRECTORY = "base_messages",
-  BASE_MESSAGES_WITH_USERNAME = "messages_with_username",
-  BASE_MESSAGES_GROUPED_BY = "grouped_by_messages",
+  DIRETORIO_BASE_MENSAGENS = "base_messages",
+  DIRETORIO_MENSAGENS_COM_USERNAME = "mensagens_com_username",
+  BASE_MENSAGEM_AGRUPADAS = "mensagens_agrupadas_postId",
 }
 
 export const BACKEND_EMPLOYEE_BUCKET_NAME = "backendtestemployees";

@@ -1,7 +1,7 @@
 import express, { Router } from "express";
 import mysql from "mysql";
 import { funcionariosRouter } from "./rotas/funcionariosRouter";
-import { messagesRouter } from "./rotas/messagesRouter";
+import { mensagensRouter } from "./rotas/mensagensRouter";
 
 require("dotenv").config();
 
@@ -19,7 +19,7 @@ const rota = Router();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/", rota);
-app.use("/mensagens", messagesRouter);
+app.use("/mensagens", mensagensRouter);
 app.use("/funcionarios", funcionariosRouter);
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");

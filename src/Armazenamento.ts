@@ -1,5 +1,5 @@
 import AWS from "aws-sdk";
-import { StorageNames } from "./constants";
+import { NomesArmazenamento } from "./constants";
 import { SQLcliente } from "./server";
 import { Nomes_de_Tabelas } from "./types";
 
@@ -135,8 +135,8 @@ export class SQLArmazenamento implements Armazenamento {
 }
 
 export class S3Storage implements Armazenamento {
-  public storageName: StorageNames;
-  constructor(bucketName: StorageNames) {
+  public storageName: NomesArmazenamento;
+  constructor(bucketName: NomesArmazenamento) {
     this.storageName = bucketName;
   }
 
