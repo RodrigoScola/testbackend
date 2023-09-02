@@ -1,3 +1,7 @@
+# Visualização do projeto na WEB
+
+A Aplicação está no site https://teste-devfront-final.vercel.app, para saber mais das rotas, veja a baixo o capítulo [Rotas](#Rotas)
+
 # Como rodar
 
 Para rodar este teste em sua própria máquina ou servidor, deverá fazer:
@@ -60,6 +64,8 @@ npm run dev
 
 # Rotas
 
+## Mensagens
+
 Para a visualicação dos resultados, podera baixar os arquivos aqui
 
 ou podera ir para os arquivos neste projeto
@@ -70,25 +76,45 @@ ou podera ir para os arquivos neste projeto
 
 - Mensagens base: `arquivos/mensagens_base.json`
 
-para a visualizacao base das mensages, ir para a rota (apos seguir os passos anteriores, estas mensagens estão no bucket `mesagens`)
+- Para a visualizacao base das mensages, ir para a rota (apos seguir os passos anteriores, estas mensagens estão no bucket `mesagens`)
 
 ```
 localhost:5000/mensagens/
 ```
 
-para a visualização de mensagens agrupadas ir para a rota:
+- Para a visualização de mensagens agrupadas ir para a rota:
 
 ```
 localhost:5000/mensagens/agrupadas
 ```
 
-para a visualização de mensagens com user_names ir para a rota:
+- Para a visualização de mensagens com user_names ir para a rota:
 
 ```
 localhost:5000/mensagens/com_usernames
 ```
 
-## Testes
+## Funcionários
+
+- Para a visualiação de funcionários, entre na rota:
+
+```
+localhost:5000/funcionarios/
+```
+
+- Para criar um novo funcionário, entre na rota:
+
+```
+localhost:5000/funcionarios/novo
+```
+
+- Para atualizar um funcionário, entre na rota:
+
+```
+localhost:5000/funcionarios/:id/editar
+```
+
+# Testes
 
 Para a realização de testes, realizar o comando:
 
