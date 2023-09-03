@@ -53,5 +53,5 @@ app.listen(8080, async () => {
   //   }
   // });
 
-  console.log(`Servidor funcionando no port ${PORT}`);
+  console.log(`Servidor funcionando no port ${8080}`);
 });
