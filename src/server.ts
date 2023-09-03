@@ -7,7 +7,7 @@ require("dotenv").config();
 
 const PORT = process.env.port || 8080;
 
-// beans
+// bas
 export const SQLcliente = mysql.createConnection({
   host: process.env.AWS_RDS_HOST,
   port: parseInt(process.env.AWS_RDS_PORT || "3306") || 3306,
