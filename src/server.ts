@@ -44,13 +44,6 @@ app.listen(PORT, async () => {
       return;
     }
     console.log("> Conectado na Database");
-    try {
-      SQLcliente.query(
-        `create table if not exists funcionarios ( id text not null, email varchar(50) not null, nome varchar(50) not null, empresa varchar(50) not null, telefone varchar(15) not null, created_at datetime default now())`
-      );
-    } catch (err) {
-      console.log(err);
-    }
   });
 
   console.log(`Servidor funcionando no port ${PORT}`);
