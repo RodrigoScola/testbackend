@@ -28,9 +28,7 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
-  res.status(200).json({
-    status: "Conectado a API",
-  });
+  res.sendStatus(200);
 });
 
 rota.get("/", (req, res) => {
