@@ -1,0 +1,22 @@
+{
+  "apps": [
+    {
+      "name": "web",
+      "exec_mode": "cluster",
+      "instances": "max",
+      "script": "./lib/server.ts",
+      "interpreter": "ts-node",
+      "env": {
+        "ENV": "prod",
+        "PORT": 3000,
+        "DB_USERNAME": "boobo94_username",
+        "DB_PASSWORD": "123",
+        "DB_NAME": "some_db_name",
+        "DB_HOST": "127.0.0.1",
+        "DB_DIALECT": "postgres",
+        "DB_PORT": 5432,
+        "SECRET_KEY": "boobo94_is_my_secret_key"
+      }
+    }
+  ]
+}
