@@ -22,7 +22,7 @@ mensagensRouter.get("/", async (req, res) => {
     }
     return JSON.parse(s);
   });
-  res.json({
+  return res.json({
     mensagens: mensagensJSON,
   });
 });
@@ -66,7 +66,7 @@ mensagensRouter.get("/comecarprocesso", async (req, res) => {
       await Promise.all(promessas);
     }
 
-    res.json({
+    return res.json({
       treatments: ProcessadorDeMensagens.AdicionarUsernames(mensagensDaApi),
     });
   } catch (e) {
@@ -82,7 +82,7 @@ mensagensRouter.get("/agrupadas", async (req, res) => {
   );
 
   // they will be in a csv format, in order to make excel files
-  res.json({
+  return res.json({
     m: mensagens,
   });
 });
@@ -94,7 +94,7 @@ mensagensRouter.get("/com_usernames", async (req, res) => {
   );
 
   // seriam em formatos csv, em ordem de criar arquivos do excel
-  res.json({
+  return res.json({
     m: mensagens,
   });
 });
