@@ -2,7 +2,6 @@
 
 
 .env
-
 pm2.json
 
 /.vscode

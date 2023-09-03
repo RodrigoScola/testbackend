@@ -5,6 +5,8 @@ import { mensagensRouter } from "./rotas/mensagensRouter";
 
 require("dotenv").config();
 
+const PORT = process.env.PORT || 5000;
+
 export const SQLcliente = mysql.createConnection({
   host: process.env.AWS_RDS_HOST,
   port: 3306,
@@ -30,7 +32,7 @@ rota.get("/", (req, res) => {
   });
 });
 
-app.listen(5000, async () => {
+app.listen(PORT, async () => {
   SQLcliente.connect((err) => {
     if (err) {
       console.error(err);
