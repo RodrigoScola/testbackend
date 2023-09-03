@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 export const SQLcliente = mysql.createConnection({
   host: process.env.AWS_RDS_HOST,
-  port: 3306,
+  port: parseInt(process.env.AWS_RDS_PORT || "3306") || 3306,
   password: process.env.AWS_RDS_PASSWORD,
   database: process.env.AWS_RDS_DATABASE_NAME,
   user: process.env.AWS_RDS_USERNAME,
