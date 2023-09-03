@@ -48,5 +48,5 @@ app.listen(PORT, async () => {
     }
   });
 
-  console.log("Servidor funcionando no PORT 5000; ");
+  console.log(`Servidor funcionando no port ${PORT}`);
 });
