@@ -69,9 +69,10 @@ var funcionariosRouter_1 = require("./rotas/funcionariosRouter");
 var mensagensRouter_1 = require("./rotas/mensagensRouter");
 require("dotenv").config();
 var PORT = process.env.PORT || 5000;
+// beans
 exports.SQLcliente = mysql_1.default.createConnection({
     host: process.env.AWS_RDS_HOST,
-    port: 3306,
+    port: parseInt(process.env.AWS_RDS_PORT || "3306") || 3306,
     password: process.env.AWS_RDS_PASSWORD,
     database: process.env.AWS_RDS_DATABASE_NAME,
     user: process.env.AWS_RDS_USERNAME,
@@ -85,8 +86,13 @@ app.use("/mensagens", mensagensRouter_1.mensagensRouter);
 app.use("/funcionarios", funcionariosRouter_1.funcionariosRouter);
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
+app.get("/", function (req, res) {
+    res.status(200).json({
+        status: "Conectado a API",
+    });
+});
 rota.get("/", function (req, res) {
-    res.json({
+    res.status(200).json({
         response: "Hello World",
     });
 });
