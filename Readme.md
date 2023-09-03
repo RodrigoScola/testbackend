@@ -101,19 +101,19 @@ ou podera ir para os arquivos neste projeto
 - Para a visualizacao base das mensages, ir para a rota (apos seguir os passos anteriores, estas mensagens estão no bucket `mesagens`)
 
 ```
-localhost:5000/mensagens/
+localhost:8080/mensagens/
 ```
 
 - Para a visualização de mensagens agrupadas ir para a rota:
 
 ```
-localhost:5000/mensagens/agrupadas
+localhost:8080/mensagens/agrupadas
 ```
 
 - Para a visualização de mensagens com user_names ir para a rota:
 
 ```
-localhost:5000/mensagens/com_usernames
+localhost:8080/mensagens/com_usernames
 ```
 
 ## Funcionários
@@ -121,19 +121,19 @@ localhost:5000/mensagens/com_usernames
 - Para a visualiação de funcionários, entre na rota:
 
 ```
-localhost:5000/funcionarios/
+localhost:8080/funcionarios/
 ```
 
 - Para criar um novo funcionário, entre na rota:
 
 ```
-localhost:5000/funcionarios/novo
+localhost:8080/funcionarios/novo
 ```
 
 - Para atualizar um funcionário, entre na rota:
 
 ```
-localhost:5000/funcionarios/:id/editar
+localhost:8080/funcionarios/:id/editar
 ```
 
 # Testes
