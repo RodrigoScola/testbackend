@@ -27,6 +27,12 @@ app.use("/funcionarios", funcionariosRouter);
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "Conectado a API",
+  });
+});
+
 rota.get("/", (req, res) => {
   res.status(200).json({
     response: "Hello World",
