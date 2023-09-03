@@ -27,7 +27,7 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
 rota.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     response: "Hello World",
   });
 });
