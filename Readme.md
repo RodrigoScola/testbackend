@@ -14,19 +14,6 @@ git clone https://github.com/RodrigoScola/testbackend.git
 
 - Criar uma database `mysql`;
 
-- Inserir estes valores no console mysql:
-
-```sql
-create table funcionarios (
-     id text not null,
-     email varchar(50) not null,
-     nome varchar(50) not null,
-     empresa varchar(50) not null,
-     telefone varchar(15) not null,
-     created_at datetime default now()
-);
-```
-
 - Criar um arquivo .env e configurar com as seguintes variáveis, com os valores apropriados
 
 ```js

@@ -116,5 +116,7 @@ funcionariosRouter.post("/:idFuncionario/editar", async (req, res) => {
   const funcionarios = await Funcionarios.getTodosFuncionarios(
     new SQLArmazenamento(Nomes_de_Tabelas.FUNCIONARIOS)
   );
-  return res.render("paginas/funcionarios", { funcionarios: funcionarios });
+
+  // redireciona para /funcionarios onde adiciona os parametros ordem e agrupar por
+  return res.redirect("/funcionarios");
 });
