@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Router } from "express";
 import mysql from "mysql";
 import { funcionariosRouter } from "./rotas/funcionariosRouter";
 import { mensagensRouter } from "./rotas/mensagensRouter";
@@ -37,7 +37,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(8080, async () => {
+app.listen(PORT, async () => {
   SQLcliente.connect((err) => {
     if (err) {
       console.error(err);
@@ -53,5 +53,5 @@ app.listen(8080, async () => {
     }
   });
 
-  console.log(`Servidor funcionando no port ${8080}`);
+  console.log(`Servidor funcionando no port ${PORT}`);
 });
