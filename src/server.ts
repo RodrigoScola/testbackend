@@ -1,11 +1,11 @@
 import express from "express";
-// import mysql from "mysql";
-// import { funcionariosRouter } from "./rotas/funcionariosRouter";
-// import { mensagensRouter } from "./rotas/mensagensRouter";
+import mysql from "mysql";
+import { funcionariosRouter } from "./rotas/funcionariosRouter";
+import { mensagensRouter } from "./rotas/mensagensRouter";
 
-// require("dotenv").config();
+require("dotenv").config();
 
-// const PORT = process.env.port || 8080;
+const PORT = process.env.port || 8080;
 
 // // bas
 export const SQLcliente = mysql.createConnection({
@@ -17,19 +17,19 @@ export const SQLcliente = mysql.createConnection({
 });
 
 const app = express();
-// const rota = Router();
+const rota = Router();
 
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-// app.use("/", rota);
-// app.use("/mensagens", mensagensRouter);
-// app.use("/funcionarios", funcionariosRouter);
-// app.set("views", __dirname + "/views");
-// app.set("view engine", "ejs");
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/", rota);
+app.use("/mensagens", mensagensRouter);
+app.use("/funcionarios", funcionariosRouter);
+app.set("views", __dirname + "/views");
+app.set("view engine", "ejs");
 
-// app.get("/", (req, res) => {
-//   res.sendStatus(200);
-// });
+app.get("/", (req, res) => {
+  res.sendStatus(200);
+});
 
 app.get("/", (req, res) => {
   res.status(200).json({
