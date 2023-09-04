@@ -4,8 +4,13 @@
 .env
 pm2.json
 
+windowskp.pem
+
 /.vscode
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+
+
